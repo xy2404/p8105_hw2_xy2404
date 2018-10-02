@@ -13,12 +13,86 @@ library(tidyverse)
 # Problem 1:
 
 ```{r}
-NYC_transit = read_csv(file = "/Users/annie/Desktop/data science/Homework/Homework_2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
-janitor::clean_names(NYC_transit) %>% 
-select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry,     vending, entrance_type, ada) %>% 
-mutate(entry = recode(entry, 'YES' = T, 'NO' = F))
+NYC_transit = read_csv(file = "/Users/annie/Desktop/data science/Homework/Homework_2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
+janitor::clean_names() %>% 
+select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry, vending, entrance_type, ada) %>% 
+mutate(entry = recode(entry, 'YES' = T, 'NO' = F)) 
 
 dim(NYC_transit)
 
 ```
+
+## How many distinct stations are there?
+
+```{r}
+NYC_transit %>%
+ distinct(station_name, line) %>% 
+ nrow()
+```
+
+
+## How many stations are ADA compliant?
+
+```{r}
+NYC_transit %>% 
+  filter(ada == T) %>% 
+  distinct(station_name, line) %>% 
+  dim()
+```
+
+
+## The proportion of station entrances / exits without vending allow entrance
+```{r}
+dim(NYC_transit %>% filter(vending == "NO"))/dim(NYC_transit)
+```
+
+## Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+
+```{r}
+NYC_transit %>% 
+  gather(key = route_number, value = route_name, route1:route11) %>% 
+  filter(route_name == 'A') %>% 
+  distinct(station_name, line) %>% 
+  dim()
+  
+NYC_transit %>% 
+  gather(key = route_number, value = route_name, route1:route11) %>%
+  filter(route_name == 'A', ada == T) %>% 
+  distinct(station_name, line) %>% 
+  dim()
+```
+
+# Problem 2:
+```{r}
+Trash_wheel = readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2017-9-26.xlsx") %>% 
+janitor::clean_names() %>% 
+filter(!dumpster == "NA") %>% 
+mutate(sports_balls = as.integer(round(sports_balls,0)))
+```
+
+## Read and clean precipitation data for 2016 and 2017
+
+```{r}
+pre_2017 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 3, range = 'A2:B15') %>% 
+  mutate(year = 'rep(2017,13)') %>% 
+  filter(!Total == 'NA')
+```
+
+```{r}
+pre_2016 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 4, range = 'A2:B15') %>% 
+  mutate(year = 'rep(2016,13)') 
+```
+
+```{r}
+prefull = rbind(pre_2017,pre_2016) %>% 
+  mutate(month = as.factor(Month)) 
+levels(prefull$month) = month.name
+prefull
+  
+```
+
+
+
+
+
 
