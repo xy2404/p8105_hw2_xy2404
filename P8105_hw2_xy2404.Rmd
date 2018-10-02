@@ -43,7 +43,7 @@ NYC_transit %>%
 
 ## The proportion of station entrances / exits without vending allow entrance
 ```{r}
-dim(NYC_transit %>% filter(vending == "NO"))/dim(NYC_transit)
+nrow(NYC_transit %>% filter(entry== T&vending == "NO"))/nrow(NYC_transit %>%  filter(vending =="NO"))
 ```
 
 ## Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
@@ -92,6 +92,17 @@ prefull
 ```
 
 
+# Problem 3
+```{r}
+library(p8105.datasets)
+
+data(nyc_airbnb)
+data(rest_inspec)
+```
+
+```{r}
+
+```
 
 
 
