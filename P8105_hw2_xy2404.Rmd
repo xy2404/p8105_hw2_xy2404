@@ -6,3 +6,19 @@ date: "10/3/2018"
 output: github_document
 ---
 
+```{r, echo = FALSE}
+library(tidyverse)
+```
+
+# Problem 1:
+
+```{r}
+NYC_transit = read_csv(file = "/Users/annie/Desktop/data science/Homework/Homework_2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
+janitor::clean_names(NYC_transit) %>% 
+select(line, station_name, station_latitude, station_longitude, starts_with("route"), entry,     vending, entrance_type, ada) %>% 
+mutate(entry = recode(entry, 'YES' = T, 'NO' = F))
+
+dim(NYC_transit)
+
+```
+
