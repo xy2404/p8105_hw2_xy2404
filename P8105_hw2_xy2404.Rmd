@@ -12,6 +12,8 @@ library(tidyverse)
 
 # Problem 1:
 
+Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable
+
 ```{r}
 NYC_transit = read_csv(file = "/Users/annie/Desktop/data science/Homework/Homework_2/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>% 
 janitor::clean_names() %>% 
@@ -21,6 +23,9 @@ mutate(entry = recode(entry, 'YES' = T, 'NO' = F))
 dim(NYC_transit)
 
 ```
+For problem 1, the dataset contains `r colnames(NYC_transit)` variables. 
+
+Now the dataset is stored in the dataframe, which has `r nrow(NYC_transit)` rows and `r ncol(NYC_transit)` columns.
 
 ## How many distinct stations are there?
 
@@ -37,7 +42,7 @@ NYC_transit %>%
 NYC_transit %>% 
   filter(ada == T) %>% 
   distinct(station_name, line) %>% 
-  dim()
+  nrow()
 ```
 
 
@@ -45,26 +50,34 @@ NYC_transit %>%
 ```{r}
 nrow(NYC_transit %>% filter(entry== T&vending == "NO"))/nrow(NYC_transit %>%  filter(vending =="NO"))
 ```
+In all entrances / exits without vending, the proportion of that allow entrance is 0.377
 
-## Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+## Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train?
 
 ```{r}
 NYC_transit %>% 
   gather(key = route_number, value = route_name, route1:route11) %>% 
   filter(route_name == 'A') %>% 
   distinct(station_name, line) %>% 
-  dim()
-  
+  nrow()
+
+```
+
+## Of the stations that serve the A train, how many are ADA compliant?
+```{r}
 NYC_transit %>% 
   gather(key = route_number, value = route_name, route1:route11) %>%
   filter(route_name == 'A', ada == T) %>% 
   distinct(station_name, line) %>% 
-  dim()
+  nrow()
 ```
 
+
 # Problem 2:
+
+## Read and clean the Mr. Trash Wheel sheet:
 ```{r}
-Trash_wheel = readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2017-9-26.xlsx") %>% 
+Trash_wheel_data = readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2018-7-28.xlsx") %>%  
 janitor::clean_names() %>% 
 filter(!dumpster == "NA") %>% 
 mutate(sports_balls = as.integer(round(sports_balls,0)))
@@ -73,36 +86,40 @@ mutate(sports_balls = as.integer(round(sports_balls,0)))
 ## Read and clean precipitation data for 2016 and 2017
 
 ```{r}
-pre_2017 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 3, range = 'A2:B15') %>% 
-  mutate(year = 'rep(2017,13)') %>% 
-  filter(!Total == 'NA')
+prec_2017 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 4, range = 'A2:B15') %>% 
+  mutate(year = 'rep(2017,13)') 
 ```
 
 ```{r}
-pre_2016 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2017-9-26.xlsx", sheet = 4, range = 'A2:B15') %>% 
+prec_2016 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 5, range = 'A2:B15') %>% 
   mutate(year = 'rep(2016,13)') 
 ```
 
 ```{r}
-prefull = rbind(pre_2017,pre_2016) %>% 
+prefull = rbind(prec_2017,prec_2016) %>% 
   mutate(month = as.factor(Month)) 
-levels(prefull$month) = month.name
-prefull
+  levels(prefull$month) = month.name
+  prefull
   
 ```
 
+## What was the median number of sports balls in a dumpster in 2016?
 
-# Problem 3
+```{r}
+median(filter(Trash_wheel_data, year == 2016)$sports_balls)
+```
+
+# Problem 3  
 ```{r}
 library(p8105.datasets)
 data(brfss_smart2010)
 ```
 
-## Format the data to use appropriate variable names;
-## Focus on the “Overall Health” topic
-## Exclude variables for class, topic, question, sample size, and everything from lower confidence limit to  GeoLocation
-## Structure data so that values for Response (“Excellent” to “Poor”) are column names / variables which indicate the proportion of subjects with each response (which are values of Data_value in the original dataset)
-## Create a new variable showing the proportion of responses that were “Excellent” or “Very Good”
+Format the data to use appropriate variable names;
+Focus on the “Overall Health” topic
+Exclude variables for class, topic, question, sample size, and everything from lower confidence limit to  GeoLocation
+Structure data so that values for Response (“Excellent” to “Poor”) are column names / variables which indicate the proportion of subjects with each response (which are values of Data_value in the original dataset)
+Create a new variable showing the proportion of responses that were “Excellent” or “Very Good”
 ```{r}
 brfss =
   brfss_smart2010 %>% 
@@ -144,13 +161,19 @@ median(brfss$excellent, na.rm = TRUE)
 ```{r}
 ggplot(filter(brfss, year == 2002),
        aes(x = excellent)) +
-         geom_histogram()
+         geom_histogram() +
+  labs(
+    title = "The histogram of “Excellent” response values in the year 2002"
+  )
 ```
 
 ## Make a scatterplot showing the proportion of “Excellent” response values in New York County and Queens County (both in NY State) in each year from 2002 to 2010.
 ```{r}
 ggplot(filter(brfss, locationdesc == "NY - New York County"| locationdesc == "NY - Queens County"), aes(x = year, y = excellent))+
-  geom_point(aes(color= locationdesc, alpha = 0.5))
+  geom_point(aes(color= locationdesc, alpha = 0.5)) +
+  labs(
+    title = "The proportion of “Excellent” response values in New York County and Queens County in each year from 2002 to 2010"
+  )
   
 ```
 
