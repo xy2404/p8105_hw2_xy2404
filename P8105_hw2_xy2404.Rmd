@@ -23,27 +23,26 @@ mutate(entry = recode(entry, 'YES' = T, 'NO' = F))
 dim(NYC_transit)
 
 ```
-For problem 1, the dataset contains `r colnames(NYC_transit)` variables. 
+For problem 1, the dataset contains `r colnames(NYC_transit)` variables. In orginal data, there are 32 variables. After data cleaning, there are 19 varibales for now dataset. Now the dataset is stored in the dataframe, which has `r nrow(NYC_transit)` rows and `r ncol(NYC_transit)` columns. And the new dataset is not tidy. Becasue the route1 to route11 are spread. 
 
-Now the dataset is stored in the dataframe, which has `r nrow(NYC_transit)` rows and `r ncol(NYC_transit)` columns.
 
 ## How many distinct stations are there?
-
 ```{r}
 NYC_transit %>%
  distinct(station_name, line) %>% 
  nrow()
 ```
+There are 465 stations in there.
 
 
 ## How many stations are ADA compliant?
-
 ```{r}
 NYC_transit %>% 
   filter(ada == T) %>% 
   distinct(station_name, line) %>% 
   nrow()
 ```
+There are 84 stations, which are ADA compliants.
 
 
 ## The proportion of station entrances / exits without vending allow entrance
@@ -52,8 +51,8 @@ nrow(NYC_transit %>% filter(entry== T&vending == "NO"))/nrow(NYC_transit %>%  fi
 ```
 In all entrances / exits without vending, the proportion of that allow entrance is 0.377
 
-## Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train?
 
+## Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train?
 ```{r}
 NYC_transit %>% 
   gather(key = route_number, value = route_name, route1:route11) %>% 
@@ -62,6 +61,8 @@ NYC_transit %>%
   nrow()
 
 ```
+After reformating the data, there are 60 stations serve the A train.
+
 
 ## Of the stations that serve the A train, how many are ADA compliant?
 ```{r}
@@ -71,20 +72,20 @@ NYC_transit %>%
   distinct(station_name, line) %>% 
   nrow()
 ```
+Of the stations that serve the A strain, there are 17 ADA compliant.
 
 
 # Problem 2:
 
 ## Read and clean the Mr. Trash Wheel sheet:
 ```{r}
-Trash_wheel_data = readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2018-7-28.xlsx") %>%  
+Trash_wheel_data = readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", range = 'A2:N338') %>%  
 janitor::clean_names() %>% 
 filter(!dumpster == "NA") %>% 
 mutate(sports_balls = as.integer(round(sports_balls,0)))
 ```
 
 ## Read and clean precipitation data for 2016 and 2017
-
 ```{r}
 prec_2017 =  readxl::read_xlsx("/Users/annie/Desktop/data science/Homework/Homework_2/HealthyHarborWaterWheelTotals2018-7-28.xlsx", sheet = 4, range = 'A2:B15') %>% 
   mutate(year = 'rep(2017,13)') 
@@ -103,11 +104,9 @@ prefull = rbind(prec_2017,prec_2016) %>%
   
 ```
 
-## What was the median number of sports balls in a dumpster in 2016?
+The Trash_wheel dataset contains `r nrow(Trash_wheel_data)` rows and `r ncol(Trash_wheel_data)` columns, and the dataset contains `r colnames(Trash_wheel_data)` varibales. After reading and cleaning precipitation data for 2016 and 2017, it contains `r nrow(prefull)` rows and `r ncol(prefull)` columns, the dataset contains `r colnames(prefull)` varibales. In the dataset of Mr. Trash Wheel, I choose the dumpster1, which has 4.31 tons and 18 cubic yards,as the example. On the 05/16/14, there are 1450 plastic bottles, 1820 polysyrene, 126000 cigarette butts, 72 glass bottles, 584 grocery bags, 1162 chip bages and 7 sports balls. The precipiation in 2017 is 32.93. The median number of sports balls in a dumspter in 2016 is `r median(filter(Trash_wheel_data, year == 2016)$sports_balls)`.
 
-```{r}
-median(filter(Trash_wheel_data, year == 2016)$sports_balls)
-```
+
 
 # Problem 3  
 ```{r}
@@ -138,6 +137,8 @@ distinct(Locationdesc) %>%
 nrow()
 
 ```
+There are 404 unique locations are included in the dataset
+
 
 ## How many state are included in the dataset and What state is observed the most?
 ```{r}
@@ -147,17 +148,19 @@ nrow()
 
 tail(names(sort(table(brfss_smart2010$Locationabbr))),1)
 ```
+There are 50 state and 1 DC included in the dataset, and the 'NJ' is the most observed.
+
 
 ## In 2002, what is the median of the “Excellent” response value?
-
 ```{r}
-median(brfss$excellent, na.rm = TRUE)
+df_2002 = brfss %>%
+  filter(year == '2002')
+median(df_2002$excellent, na.rm = TRUE)
 ```
-
+The median of the "Excellent" response value is 23.6
 
  
 ## Make a histogram of “Excellent” response values in the year 2002.
-
 ```{r}
 ggplot(filter(brfss, year == 2002),
        aes(x = excellent)) +
@@ -166,6 +169,7 @@ ggplot(filter(brfss, year == 2002),
     title = "The histogram of “Excellent” response values in the year 2002"
   )
 ```
+
 
 ## Make a scatterplot showing the proportion of “Excellent” response values in New York County and Queens County (both in NY State) in each year from 2002 to 2010.
 ```{r}
